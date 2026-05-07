@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BIRS — Business Idea Risk Simulator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+      color: #333;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #888;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 5px;
+      margin-top: 14px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #4a90e2;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .slider-row input[type="range"] {
+      flex: 1;
+    }
+
+    .slider-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #4a90e2;
+      min-width: 100px;
+      text-align: right;
+    }
+
+    .error-msg {
+      font-size: 12px;
+      color: #e74c3c;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .submit-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      background-color: #4a90e2;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      background-color: #357abd;
+    }
+
+    .success-banner {
+      display: none;
+      background-color: #e8f5e9;
+      border: 1px solid #a5d6a7;
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-size: 14px;
+      color: #2e7d32;
+      margin-top: 12px;
+    }
+
+    #results-section {
+      display: none;
+    }
+
+    .risk-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .badge-low    { background: #e8f5e9; color: #2e7d32; }
+    .badge-medium { background: #fff8e1; color: #f57f17; }
+    .badge-high   { background: #ffebee; color: #c62828; }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .score-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .score-card .score-num {
+      font-size: 28px;
+      font-weight: 700;
+      color: #4a90e2;
+    }
+
+    .score-card .score-cat {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .risk-index-box {
+      text-align: center;
+      padding: 20px;
+      border: 2px solid #4a90e2;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+
+    .risk-index-box .index-num {
+      font-size: 48px;
+      font-weight: 700;
+      color: #4a90e2;
+    }
+
+    .risk-index-box .index-label {
+      font-size: 13px;
+      color: #888;
+    }
+
+    .bar-wrap {
+      background: #eee;
+      border-radius: 6px;
+      height: 10px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 10px;
+      border-radius: 6px;
+      background: #4a90e2;
+      transition: width 0.6s ease;
+    }
+
+    .report-section {
+      margin-top: 8px;
+    }
+
+    .report-item {
+      border-left: 4px solid #4a90e2;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      background: #f8f9fa;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .report-item.low    { border-color: #43a047; }
+    .report-item.medium { border-color: #fb8c00; }
+    .report-item.high   { border-color: #e53935; }
+
+    .report-item h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    .report-item p {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .recommendation {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #4a90e2;
+      font-weight: 600;
+    }
+
+    .logo-box {
+      display: none;
+      align-items: center;
+      gap: 14px;
+      background: #f0f7ff;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 14px;
+    }
+
+    .logo-svg-wrap svg {
+      border-radius: 10px;
+    }
+
+    .logo-info .logo-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a3a5c;
+    }
+
+    .logo-info .logo-industry {
+      font-size: 12px;
+      color: #888;
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <h1>Business Idea Risk Simulator</h1>
+    <p class="subtitle" id="page-subtitle">Fill in your business idea details and analyze its risk</p>
+
+    <div class="card">
+      <p class="section-title">General Information</p>
+
+      <div class="logo-box" id="logo-box">
+        <div class="logo-svg-wrap" id="logo-svg-wrap"></div>
+        <div class="logo-info">
+          <div class="logo-name" id="logo-name-text"></div>
+          <div class="logo-industry" id="logo-industry-text"></div>
+        </div>
+      </div>
+
+      <label for="idea-name">Business idea name *</label>
+      <input type="text" id="idea-name" placeholder="e.g. AI-powered accounting assistant"
+             oninput="generateLogo()" />
+
+      <button type="button" onclick="showSimilar()" style="
+        margin-top: 8px;
+        padding: 7px 14px;
+        font-size: 12px;
+        background: white;
+        border: 1px solid #4a90e2;
+        color: #4a90e2;
+        border-radius: 6px;
+        cursor: pointer;
+      ">Show similar businesses →</button>
+
+      <div id="similar-box" style="display:none; margin-top:12px; background:#f0f7ff;
+           border-radius:8px; padding:14px; font-size:13px; color:#333;">
+        <strong style="display:block; margin-bottom:8px; color:#4a90e2;">
+          Similar businesses found:
+        </strong>
+        <div id="similar-list"></div>
+      </div>
+
+      <div class="error-msg" id="err-name">Business idea name is required.</div>
+
+      <label for="idea-desc">Description *</label>
+      <textarea id="idea-desc" placeholder="Briefly describe your idea: what it does, who it's for, and how it works."></textarea>
+      <div class="error-msg" id="err-desc">Please write a meaningful description (at least 5 words).</div>
+      <p style="font-size:12px; color:#aaa; margin-top:5px;">
+        💡 Tip: If you mention a city, also include the country for better results (e.g. "Riga, Latvia" or "Vienna, Austria").
+      </p>
+
+      <label for="industry">Industry</label>
+      <select id="industry" onchange="generateLogo()">
+        <option value="">— Select —</option>
+        <option>Technology / Software</option>
+        <option>Artificial Intelligence</option>
+        <option>Healthcare</option>
+        <option>Education &amp; E-learning</option>
+        <option>Finance &amp; Banking</option>
+        <option>E-commerce &amp; Retail</option>
+        <option>Food &amp; Beverage</option>
+        <option>Tourism &amp; Travel</option>
+        <option>Logistics &amp; Delivery</option>
+        <option>Real Estate</option>
+        <option>Media &amp; Entertainment</option>
+        <option>Agriculture</option>
+        <option>Sustainability &amp; Green Tech</option>
+        <option>Fashion &amp; Lifestyle</option>
+        <option>Sports &amp; Fitness</option>
+        <option>Legal &amp; Compliance</option>
+        <option>Other</option>
+      </select>
+
+    </div>
+
+    <div class="card">
+      <p class="section-title">Risk Parameters</p>
+
+      <label>Market size</label>
+      <div class="slider-row">
+        <input type="range" id="mkt-size" min="1" max="5" step="1" value="3"
+               oninput="document.getElementById('mkt-size-lbl').textContent = mktSizeLabels[this.value]" />
+        <span class="slider-label" id="mkt-size-lbl">Medium</span>
+      </div>
+
+      <label>Competition level</label>
+      <div class="slider-row">
+        <input type="range" id="competition" min="1" max="5" step="1" value="3"
+               oninput="document.getElementById('competition-lbl').textContent = compLabels[this.value]" />
+        <span class="slider-label" id="competition-lbl">Medium</span>
+      </div>
+
+      <label>Estimated budget</label>
+      <div class="slider-row">
+        <input type="range" id="budget" min="1" max="5" step="1" value="3"
+               oninput="document.getElementById('budget-lbl').textContent = budgetLabels[this.value]" />
+        <span class="slider-label" id="budget-lbl">$10k–50k</span>
+      </div>
+
+      <label>Team experience</label>
+      <div class="slider-row">
+        <input type="range" id="team-exp" min="1" max="5" step="1" value="3"
+               oninput="document.getElementById('team-exp-lbl').textContent = expLabels[this.value]" />
+        <span class="slider-label" id="team-exp-lbl">Intermediate</span>
+      </div>
+
+      <label>Technical complexity</label>
+      <div class="slider-row">
+        <input type="range" id="tech-complexity" min="1" max="5" step="1" value="3"
+               oninput="document.getElementById('tech-complexity-lbl').textContent = complexityLabels[this.value]" />
+        <span class="slider-label" id="tech-complexity-lbl">Medium</span>
+      </div>
+
+      <label>Target audience size</label>
+      <div class="slider-row">
+        <input type="range" id="target-users" min="1" max="5" step="1" value="3"
+               oninput="document.getElementById('target-users-lbl').textContent = audienceLabels[this.value]" />
+        <span class="slider-label" id="target-users-lbl">Mixed</span>
+      </div>
+
+      <button class="submit-btn" onclick="handleSubmit()">
+        Analyze Risk →
+      </button>
+
+      <div class="success-banner" id="success-banner">
+        ✓ Your idea has been submitted! Calculating risk scores...
+      </div>
+
+    </div>
+
+    <div id="results-section">
+      <div class="card">
+        <p class="section-title">Risk Analysis Results</p>
+
+        <div class="risk-index-box">
+          <div class="index-num" id="res-index">—</div>
+          <div class="index-label">Overall Risk Index (0–100)</div>
+          <div style="margin-top:10px">
+            <span class="risk-badge" id="res-badge">—</span>
+          </div>
+        </div>
+
+        <div class="score-grid">
+          <div class="score-card">
+            <div class="score-num" id="res-market">—</div>
+            <div class="score-cat">Market Risk</div>
+            <div class="bar-wrap"><div class="bar-fill" id="bar-market" style="width:0%"></div></div>
+          </div>
+          <div class="score-card">
+            <div class="score-num" id="res-resource">—</div>
+            <div class="score-cat">Resource Risk</div>
+            <div class="bar-wrap"><div class="bar-fill" id="bar-resource" style="width:0%"></div></div>
+          </div>
+          <div class="score-card">
+            <div class="score-num" id="res-adoption">—</div>
+            <div class="score-cat">Adoption Risk</div>
+            <div class="bar-wrap"><div class="bar-fill" id="bar-adoption" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <p style="font-size:13px; color:#888; text-align:center;">
+          Idea: <strong id="res-idea-name">—</strong>
+        </p>
+
+        <div class="report-section" id="report-section">
+          <p class="section-title" style="margin-top: 20px; margin-bottom: 12px;">Detailed Risk Report</p>
+          <div id="report-market" class="report-item"></div>
+          <div id="report-resource" class="report-item"></div>
+          <div id="report-adoption" class="report-item"></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+
+    const industryColors = {
+      'Technology / Software':        ['#1a237e','#3949ab'],
+      'Artificial Intelligence':      ['#4a148c','#7b1fa2'],
+      'Healthcare':                   ['#004d40','#00897b'],
+      'Education & E-learning':       ['#e65100','#fb8c00'],
+      'Finance & Banking':            ['#1b5e20','#388e3c'],
+      'E-commerce & Retail':          ['#b71c1c','#e53935'],
+      'Food & Beverage':              ['#bf360c','#f4511e'],
+      'Tourism & Travel':             ['#006064','#00acc1'],
+      'Logistics & Delivery':         ['#33691e','#7cb342'],
+      'Real Estate':                  ['#4e342e','#8d6e63'],
+      'Media & Entertainment':        ['#880e4f','#e91e63'],
+      'Agriculture':                  ['#558b2f','#8bc34a'],
+      'Sustainability & Green Tech':  ['#2e7d32','#66bb6a'],
+      'Fashion & Lifestyle':          ['#6a1b9a','#ab47bc'],
+      'Sports & Fitness':             ['#0277bd','#29b6f6'],
+      'Legal & Compliance':           ['#37474f','#78909c'],
+      'Other':                        ['#4a90e2','#74b9e7'],
+    };
+
+    function generateLogo() {
+      const name     = document.getElementById('idea-name').value.trim();
+      const industry = document.getElementById('industry').value;
+      if (!name) return;
+
+      const words    = name.split(' ').filter(w => w.length > 0);
+      const initials = words.length >= 2
+        ? (words[0][0] + words[1][0]).toUpperCase()
+        : name.substring(0, 2).toUpperCase();
+
+      const colors = industryColors[industry] || industryColors['Other'];
+
+      const svg = `<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:${colors[0]}" />
+            <stop offset="100%" style="stop-color:${colors[1]}" />
+          </linearGradient>
+        </defs>
+        <rect width="80" height="80" rx="18" fill="url(#lg)" />
+        <text x="40" y="52" text-anchor="middle" font-family="Arial"
+              font-weight="bold" font-size="28" fill="white">${initials}</text>
+      </svg>`;
+
+      document.getElementById('logo-svg-wrap').innerHTML = svg;
+      document.getElementById('logo-name-text').textContent = name;
+      document.getElementById('logo-industry-text').textContent = industry || 'No industry selected';
+      document.getElementById('logo-box').style.display = 'flex';
+    }
+
+    const businessDB = [
+      // FOOD & BEVERAGE
+      { keywords:['food','restaurant','cafe','bakery','sandwich','eat','meal','kitchen','coffee','pastry','catering'],
+        name:'Bolt Food', country:'Estonia', region:'europe',
+        desc:'Food delivery platform popular across Baltic and Eastern European cities.',
+        url:'https://food.bolt.eu' },
+      { keywords:['food','restaurant','cafe','bakery','sandwich','eat','meal','coffee'],
+        name:'Wolt', country:'Finland', region:'europe',
+        desc:'European food delivery service operating in 25+ countries.',
+        url:'https://wolt.com' },
+      { keywords:['bakery','bread','pastry','cafe','coffee','dessert'],
+        name:'Paul Bakeries', country:'France', region:'europe',
+        desc:'French bakery chain with locations across Europe.',
+        url:'https://www.paul-international.com' },
+      { keywords:['food','restaurant','cafe','meal','eat','kitchen'],
+        name:'Deliveroo', country:'UK', region:'europe',
+        desc:'Food delivery platform connecting restaurants with customers.',
+        url:'https://deliveroo.co.uk' },
+      { keywords:['food','delivery','meal','restaurant','eat'],
+        name:'DoorDash', country:'USA', region:'america',
+        desc:'Leading US food delivery platform with nationwide coverage.',
+        url:'https://doordash.com' },
+      { keywords:['food','restaurant','meal','eat','kitchen','catering'],
+        name:'Grubhub', country:'USA', region:'america',
+        desc:'Online food ordering and delivery marketplace across US cities.',
+        url:'https://grubhub.com' },
+      { keywords:['coffee','cafe','drink','espresso'],
+        name:'Starbucks', country:'USA', region:'america',
+        desc:'Global coffee chain with strong mobile ordering platform.',
+        url:'https://starbucks.com' },
+
+      // TOURISM & TRAVEL
+      { keywords:['tourism','travel','tour','guide','experience','sightseeing','booking','trip','visit','hotel'],
+        name:'GetYourGuide', country:'Germany', region:'europe',
+        desc:'Marketplace for tours, activities and travel experiences across Europe.',
+        url:'https://getyourguide.com' },
+      { keywords:['tourism','travel','hotel','accommodation','stay','booking'],
+        name:'Booking.com', country:'Netherlands', region:'europe',
+        desc:"World's leading accommodation booking platform, headquartered in Amsterdam.",
+        url:'https://booking.com' },
+      { keywords:['tourism','travel','tour','guide','city','trip','experience'],
+        name:'TourRadar', country:'Austria', region:'europe',
+        desc:'European platform for multi-day tours and travel experiences.',
+        url:'https://tourradar.com' },
+      { keywords:['tourism','travel','hotel','accommodation','rent','stay'],
+        name:'Airbnb', country:'USA', region:'america',
+        desc:'Global platform for booking unique accommodations and experiences.',
+        url:'https://airbnb.com' },
+      { keywords:['flight','airline','ticket','travel','airport'],
+        name:'Skyscanner', country:'UK', region:'europe',
+        desc:'Flight and travel comparison platform used across Europe.',
+        url:'https://skyscanner.net' },
+
+      // TECHNOLOGY & SOFTWARE
+      { keywords:['software','app','platform','saas','tool','digital','tech','it','web'],
+        name:'Pipedrive', country:'Estonia', region:'europe',
+        desc:'CRM software company founded in Tallinn, used globally.',
+        url:'https://pipedrive.com' },
+      { keywords:['software','app','tool','productivity','workspace','platform'],
+        name:'Notion', country:'USA', region:'america',
+        desc:'All-in-one productivity and collaboration workspace.',
+        url:'https://notion.so' },
+      { keywords:['app','mobile','software','platform','digital','tech'],
+        name:'Wise', country:'UK', region:'europe',
+        desc:'International money transfer platform founded in London.',
+        url:'https://wise.com' },
+
+      // FINANCE & BANKING
+      { keywords:['finance','bank','payment','money','fintech','invest','loan','credit'],
+        name:'N26', country:'Germany', region:'europe',
+        desc:'German digital bank operating across Europe with no-fee accounts.',
+        url:'https://n26.com' },
+      { keywords:['finance','bank','payment','money','transfer','fintech'],
+        name:'Monzo', country:'UK', region:'europe',
+        desc:'UK challenger bank offering smart budgeting and instant payments.',
+        url:'https://monzo.com' },
+      { keywords:['invest','stock','trading','portfolio','crypto','asset'],
+        name:'Trading 212', country:'Bulgaria', region:'europe',
+        desc:'European commission-free investing app for stocks and ETFs.',
+        url:'https://trading212.com' },
+      { keywords:['finance','bank','payment','invest','money'],
+        name:'Robinhood', country:'USA', region:'america',
+        desc:'Commission-free investing app for stocks and cryptocurrencies.',
+        url:'https://robinhood.com' },
+
+      // HEALTHCARE
+      { keywords:['health','medical','doctor','clinic','patient','hospital','care','pharmacy'],
+        name:'Kry / Livi', country:'Sweden', region:'europe',
+        desc:'European online doctor consultation platform operating in 5 countries.',
+        url:'https://kry.se' },
+      { keywords:['health','fitness','gym','workout','exercise','wellness'],
+        name:'Urban Sports Club', country:'Germany', region:'europe',
+        desc:'European sports and fitness subscription giving access to gyms and studios.',
+        url:'https://urbansportsclub.com' },
+      { keywords:['health','medical','doctor','appointment','clinic'],
+        name:'Zocdoc', country:'USA', region:'america',
+        desc:'US platform for finding and booking doctor appointments online.',
+        url:'https://zocdoc.com' },
+      { keywords:['mental','therapy','wellness','anxiety','stress','psychology','mindfulness'],
+        name:'Calm', country:'USA', region:'america',
+        desc:'Mental wellness and meditation app with millions of users.',
+        url:'https://calm.com' },
+
+      // EDUCATION
+      { keywords:['education','learning','course','school','student','teach','university','e-learning'],
+        name:'Preply', country:'Ukraine/USA', region:'europe',
+        desc:'European online language tutoring platform connecting students with tutors.',
+        url:'https://preply.com' },
+      { keywords:['education','learning','language','course','study','skill'],
+        name:'Babbel', country:'Germany', region:'europe',
+        desc:'German language learning app with 10+ million subscribers.',
+        url:'https://babbel.com' },
+      { keywords:['education','course','learning','university','certificate','skill'],
+        name:'Coursera', country:'USA', region:'america',
+        desc:'Online learning platform offering courses from top universities.',
+        url:'https://coursera.org' },
+      { keywords:['education','language','learn','vocabulary','study'],
+        name:'Duolingo', country:'USA', region:'america',
+        desc:'Gamified language learning app with hundreds of millions of users.',
+        url:'https://duolingo.com' },
+
+      // E-COMMERCE & RETAIL
+      { keywords:['shop','store','sell','marketplace','product','ecommerce','retail','buy'],
+        name:'Vinted', country:'Lithuania', region:'europe',
+        desc:'Lithuanian second-hand clothing marketplace used across Europe.',
+        url:'https://vinted.com' },
+      { keywords:['shop','store','sell','ecommerce','product','marketplace'],
+        name:'Allegro', country:'Poland', region:'europe',
+        desc:'Largest e-commerce marketplace in Central & Eastern Europe.',
+        url:'https://allegro.pl' },
+      { keywords:['shop','store','sell','ecommerce','retail','marketplace'],
+        name:'Shopify', country:'Canada', region:'america',
+        desc:'Platform for building and managing online stores worldwide.',
+        url:'https://shopify.com' },
+
+      // LOGISTICS & DELIVERY
+      { keywords:['logistics','delivery','shipping','transport','courier','cargo','fleet'],
+        name:'DPD', country:'France', region:'europe',
+        desc:'European parcel delivery and logistics network operating in 50+ countries.',
+        url:'https://dpd.com' },
+      { keywords:['logistics','delivery','shipping','courier','last mile'],
+        name:'InPost', country:'Poland', region:'europe',
+        desc:'European parcel locker network with 30,000+ pickup points.',
+        url:'https://inpost.pl' },
+      { keywords:['logistics','delivery','shipping','transport','courier'],
+        name:'FedEx', country:'USA', region:'america',
+        desc:'Global courier and logistics company headquartered in Memphis.',
+        url:'https://fedex.com' },
+
+      // SUSTAINABILITY
+      { keywords:['sustainability','green','eco','environment','recycle','carbon','climate','waste'],
+        name:'Too Good To Go', country:'Denmark', region:'europe',
+        desc:'European app reducing food waste by connecting users with surplus food.',
+        url:'https://toogoodtogo.com' },
+      { keywords:['sustainability','eco','green','environment','clean','energy','solar'],
+        name:'Ecosia', country:'Germany', region:'europe',
+        desc:'German search engine that plants trees with its advertising revenue.',
+        url:'https://ecosia.org' },
+
+      // REAL ESTATE
+      { keywords:['real estate','property','rent','apartment','house','lease','housing'],
+        name:'Hemnet', country:'Sweden', region:'europe',
+        desc:'Largest property listing platform in Scandinavia.',
+        url:'https://hemnet.se' },
+      { keywords:['real estate','property','rent','apartment','house'],
+        name:'Zillow', country:'USA', region:'america',
+        desc:'US real estate marketplace for buying, selling and renting homes.',
+        url:'https://zillow.com' },
+
+      // FASHION
+      { keywords:['fashion','clothing','style','outfit','dress','apparel','wear'],
+        name:'Zalando', country:'Germany', region:'europe',
+        desc:"Europe's largest online fashion and lifestyle platform.",
+        url:'https://zalando.com' },
+      { keywords:['fashion','clothing','style','outfit','apparel'],
+        name:'ASOS', country:'UK', region:'europe',
+        desc:'British online fashion retailer targeting young adults worldwide.',
+        url:'https://asos.com' },
+    ];
+
+    const regionMap = {
+      'latvia':['europe'],'riga':['europe'],'estonia':['europe'],'tallinn':['europe'],
+      'lithuania':['europe'],'vilnius':['europe'],
+      'poland':['europe'],'warsaw':['europe'],'czech':['europe'],'prague':['europe'],
+      'hungary':['europe'],'budapest':['europe'],'romania':['europe'],'bucharest':['europe'],
+      'bulgaria':['europe'],'sofia':['europe'],'slovakia':['europe'],
+      'germany':['europe'],'berlin':['europe'],'munich':['europe'],
+      'france':['europe'],'paris':['europe'],
+      'uk':['europe'],'london':['europe'],'england':['europe'],'britain':['europe'],
+      'netherlands':['europe'],'amsterdam':['europe'],
+      'spain':['europe'],'madrid':['europe'],'barcelona':['europe'],
+      'italy':['europe'],'rome':['europe'],'milan':['europe'],
+      'sweden':['europe'],'stockholm':['europe'],
+      'norway':['europe'],'oslo':['europe'],
+      'finland':['europe'],'helsinki':['europe'],
+      'denmark':['europe'],'copenhagen':['europe'],
+      'austria':['europe'],'vienna':['europe'],
+      'switzerland':['europe'],'zurich':['europe'],
+      'belgium':['europe'],'brussels':['europe'],
+      'portugal':['europe'],'lisbon':['europe'],
+      'europe':['europe'],'european':['europe'],
+      'usa':['america'],'us':['america'],'america':['america'],'american':['america'],
+      'new york':['america'],'los angeles':['america'],'chicago':['america'],
+      'san francisco':['america'],'seattle':['america'],'boston':['america'],
+      'canada':['america'],'toronto':['america'],'vancouver':['america'],
+      'asia':['asia'],'china':['asia'],'japan':['asia'],'india':['asia'],
+      'singapore':['asia'],'korea':['asia'],
+    };
+
+    function detectRegion(text) {
+      const lower = text.toLowerCase();
+      for (const [keyword, regions] of Object.entries(regionMap)) {
+        if (lower.includes(keyword)) return regions[0];
+      }
+      return null;
+    }
+
+    function showSimilar() {
+      const desc   = document.getElementById('idea-desc').value.trim();
+      const box    = document.getElementById('similar-box');
+      const list   = document.getElementById('similar-list');
+
+      if (!desc || desc.split(' ').length < 3) {
+        box.style.display = 'block';
+        list.innerHTML = '<p style="color:#888">Please write a description first (at least 3 words).</p>';
+        return;
+      }
+
+      const lower          = desc.toLowerCase();
+      const detectedRegion = detectRegion(lower);
+
+      const scored = businessDB.map(biz => {
+        const keywordMatch = biz.keywords.filter(k => lower.includes(k)).length;
+        if (keywordMatch === 0) return null;
+        const regionBoost  = detectedRegion && biz.region === detectedRegion ? 3 : 0;
+        return { ...biz, score: keywordMatch + regionBoost };
+      }).filter(Boolean)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+
+      box.style.display = 'block';
+
+      if (!scored.length) {
+        list.innerHTML = '<p style="color:#888">No similar businesses found. Try describing your idea with more specific keywords.</p>';
+        return;
+      }
+
+      const regionLabel = detectedRegion === 'europe'  ? '🇪🇺 European'
+                        : detectedRegion === 'america' ? '🌎 American'
+                        : detectedRegion === 'asia'    ? '🌏 Asian'
+                        : '🌍 Global';
+
+      list.innerHTML = `<p style="font-size:11px;color:#888;margin-bottom:8px;">
+        Showing ${regionLabel} examples based on your description</p>` +
+        scored.map(b => `
+          <div style="margin-bottom:10px;padding:10px;background:white;border-radius:6px;">
+            <strong>${b.name}</strong>
+            <span style="color:#aaa;font-size:11px;"> — ${b.country}</span>
+            <p style="margin-top:4px;color:#555;font-size:13px;">${b.desc}</p>
+            <a href="${b.url}" target="_blank"
+               style="font-size:12px;color:#4a90e2;text-decoration:none;">
+              🔗 ${b.url}
+            </a>
+          </div>`).join('');
+    }
+
+    const mktSizeLabels    = ['', 'Very small', 'Small', 'Medium', 'Large', 'Very large'];
+    const compLabels       = ['', 'Very low', 'Low', 'Medium', 'High', 'Very high'];
+    const budgetLabels     = ['', 'Under $1k', '$1k – $10k', '$10k – $50k', '$50k – $200k', 'Over $200k'];
+    const expLabels        = ['', 'Beginner', 'Junior', 'Intermediate', 'Experienced', 'Expert'];
+    const complexityLabels = ['', 'Very simple', 'Simple', 'Medium', 'Complex', 'Very complex'];
+    const audienceLabels   = ['', 'Niche', 'Narrow', 'Mixed', 'Broad', 'Mass market'];
+
+    function getLevel(score) {
+      if (score <= 30) return 'low';
+      if (score <= 70) return 'medium';
+      return 'high';
+    }
+
+    function buildReport(id, title, score, lowText, medText, highText, lowTip, medTip, highTip) {
+      const level = getLevel(score);
+      const text  = level === 'low' ? lowText : level === 'medium' ? medText : highText;
+      const tip   = level === 'low' ? lowTip  : level === 'medium' ? medTip  : highTip;
+      const el    = document.getElementById(id);
+      el.className = 'report-item ' + level;
+      el.innerHTML =
+        '<h3>' + title + ' — ' + score + '/100</h3>' +
+        '<p>' + text + '</p>' +
+        '<p class="recommendation">→ ' + tip + '</p>';
+    }
+
+    function handleSubmit() {
+      const name = document.getElementById('idea-name').value.trim();
+      const desc = document.getElementById('idea-desc').value.trim();
+      let valid  = true;
+
+      if (name === '') {
+        document.getElementById('err-name').style.display = 'block';
+        valid = false;
+      } else {
+        document.getElementById('err-name').style.display = 'none';
+      }
+
+      const wordCount = desc.split(/\s+/).filter(w => w.length > 0).length;
+      if (desc.length < 20 || wordCount < 5) {
+        document.getElementById('err-desc').style.display = 'block';
+        valid = false;
+      } else {
+        document.getElementById('err-desc').style.display = 'none';
+      }
+
+      if (!valid) return;
+
+      const mktSize  = parseInt(document.getElementById('mkt-size').value);
+      const comp     = parseInt(document.getElementById('competition').value);
+      const budget   = parseInt(document.getElementById('budget').value);
+      const teamExp  = parseInt(document.getElementById('team-exp').value);
+      const techComp = parseInt(document.getElementById('tech-complexity').value);
+      const audience = parseInt(document.getElementById('target-users').value);
+
+      const marketScore   = ((mktSize - 1) * 12.5) + ((comp - 1) * 12.5);
+      const resourceScore = ((5 - budget) * 12.5) + ((5 - teamExp) * 12.5);
+      const adoptionScore = ((techComp - 1) * 12.5) + ((5 - audience) * 12.5);
+      const riskIndex     = Math.round((marketScore + resourceScore + adoptionScore) / 3);
+
+      let riskLevel = riskIndex <= 30 ? 'Low Risk' : riskIndex <= 70 ? 'Medium Risk' : 'High Risk';
+
+      document.getElementById('res-index').textContent    = riskIndex;
+      document.getElementById('res-market').textContent   = Math.round(marketScore);
+      document.getElementById('res-resource').textContent = Math.round(resourceScore);
+      document.getElementById('res-adoption').textContent = Math.round(adoptionScore);
+
+      document.getElementById('bar-market').style.width   = marketScore + '%';
+      document.getElementById('bar-resource').style.width = resourceScore + '%';
+      document.getElementById('bar-adoption').style.width = adoptionScore + '%';
+
+      document.getElementById('res-idea-name').textContent = name;
+
+      const badge = document.getElementById('res-badge');
+      badge.textContent = riskLevel;
+      badge.className   = 'risk-badge';
+      if (riskIndex <= 30)      badge.classList.add('badge-low');
+      else if (riskIndex <= 70) badge.classList.add('badge-medium');
+      else                      badge.classList.add('badge-high');
+
+      document.getElementById('results-section').style.display = 'block';
+      document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('page-subtitle').textContent = 'Risk Analysis Complete — ' + name;
+
+      buildReport(
+        'report-market', 'Market Risk', Math.round(marketScore),
+        'Your target market is relatively small or competition is low. This is a favorable condition for market entry.',
+        'The market shows moderate size and competition. Careful positioning will be key to success.',
+        'The market is highly competitive or oversaturated. Differentiation strategy is critical.',
+        'Focus on building brand awareness early to establish your presence.',
+        'Define your unique value proposition clearly to stand out from competitors.',
+        'Consider targeting a niche segment first before expanding to the broader market.'
+      );
+
+      buildReport(
+        'report-resource', 'Resource Risk', Math.round(resourceScore),
+        'Your budget and team experience are well-aligned with the project scope.',
+        'Resources are adequate but may be stretched. Plan your budget carefully.',
+        'Resource constraints are significant. Budget or team experience needs improvement.',
+        'Maintain a financial buffer of at least 20% for unexpected costs.',
+        'Consider hiring or partnering to fill skill gaps in your team.',
+        'Start with an MVP (Minimum Viable Product) to reduce initial resource requirements.'
+      );
+
+      buildReport(
+        'report-adoption', 'Adoption Risk', Math.round(adoptionScore),
+        'The product is technically approachable and targets a receptive audience.',
+        'Adoption may require some user education or onboarding support.',
+        'High technical complexity or audience mismatch may slow adoption significantly.',
+        'Invest in a smooth onboarding experience to convert early users.',
+        'Provide tutorials and support documentation to ease the learning curve.',
+        'Simplify your core feature set and validate with a small pilot group first.'
+      );
+    }
+
+  </script>
+
+</body>
+</html>
